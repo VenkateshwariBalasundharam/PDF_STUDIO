@@ -1,0 +1,1394 @@
+# PDFStudio — Enterprise PDF Generator Platform
+
+## Role
+
+Act as a **Senior Solution Architect, .NET 9 Architect, Angular Architect, Windows Desktop Architect, Mobile Architect, PDF Engine Architect, Database Architect, API Security Architect, DevOps Engineer, and Enterprise Product Designer**.
+
+Design and implement a production-ready enterprise application called **PDFStudio**.
+
+The goal is to create our own reusable PDF generation platform that supports:
+
+1. Web application
+2. Windows desktop application
+3. Android/iOS mobile application
+4. Public APIs for external applications
+5. Private APIs for internal applications
+6. Template-based PDF generation
+7. Document management
+8. Background PDF processing
+9. Multi-tenant architecture
+10. Enterprise security
+11. API management
+12. Offline-capable Windows processing where appropriate
+
+Do not create a simple demo. Design this as a **commercial-grade reusable enterprise product**.
+
+---
+
+# 1. Technology Stack
+
+Use the following technology stack.
+
+### Backend
+
+- C#
+- ASP.NET Core .NET 9
+- REST APIs
+- OpenAPI
+- ADO.NET
+- SQL Server
+- PostgreSQL
+- Dependency Injection
+- Background Workers
+- Built-in Microsoft libraries wherever practical
+- Clean Architecture
+- SOLID principles
+- Async/await
+- CancellationToken
+
+### Web
+
+- Angular 21
+- TypeScript
+- HTML
+- CSS
+- Responsive design
+
+Use Angular Material only where it provides clear value.
+
+### Windows
+
+Use:
+
+- .NET 9
+- WPF
+- MVVM
+- Windows 10/11 support
+
+The Windows application should support both:
+
+- Online/API mode
+- Local/offline PDF processing where technically practical
+
+### Mobile
+
+Use:
+
+- .NET MAUI
+- Android
+- iOS
+
+Mobile should primarily use the Public API.
+
+### Infrastructure
+
+- Docker
+- Linux
+- Caddy or equivalent reverse proxy
+- SQL Server/PostgreSQL
+- File/object storage
+- HTTPS
+- Environment-based configuration
+
+---
+
+# 2. Important Development Principle
+
+Do NOT tightly couple the PDF application to a particular PDF implementation.
+
+Create an abstraction:
+
+```csharp
+public interface IPdfEngine
+{
+    Task<byte[]> GenerateAsync(
+        PdfGenerationRequest request,
+        CancellationToken cancellationToken);
+
+    Task<byte[]> MergeAsync(
+        IReadOnlyList<byte[]> documents,
+        CancellationToken cancellationToken);
+
+    Task<byte[]> SplitAsync(
+        byte[] document,
+        IReadOnlyList<int> pages,
+        CancellationToken cancellationToken);
+}
+```
+
+The rest of the application must depend on the interface.
+
+The PDF engine implementation can be replaced later without changing the API, business layer, UI, or database design.
+
+Prefer Microsoft/.NET functionality where possible.
+
+Do not introduce third-party dependencies without first explaining why they are necessary.
+
+---
+
+# 3. Overall Architecture
+
+Design the system approximately as:
+
+```text
+                         PDFStudio
+                            |
+                  +---------+---------+
+                  |                   |
+             Web Application     Windows Application
+                  |                   |
+                  +---------+---------+
+                            |
+                      API Gateway
+                            |
+             +--------------+--------------+
+             |                             |
+        Public API                    Private API
+             |                             |
+             +--------------+--------------+
+                            |
+                     Application Layer
+                            |
+          +-----------------+-----------------+
+          |                 |                 |
+    Template Engine     PDF Engine       Document Engine
+          |                 |                 |
+          +-----------------+-----------------+
+                            |
+                     Job/Worker Engine
+                            |
+          +-----------------+-----------------+
+          |                                   |
+      SQL Server / PostgreSQL            File Storage
+```
+
+Mobile:
+
+```text
+Android / iOS
+      |
+ HTTPS
+      |
+Public API
+      |
+PDFStudio Backend
+```
+
+---
+
+# 4. Solution Structure
+
+Create a clean solution:
+
+```text
+PDFStudio.sln
+
+src/
+
+PDFStudio.ApiGateway
+
+PDFStudio.PublicApi
+
+PDFStudio.PrivateApi
+
+PDFStudio.Application
+
+PDFStudio.Domain
+
+PDFStudio.Infrastructure
+
+PDFStudio.PdfEngine
+
+PDFStudio.TemplateEngine
+
+PDFStudio.DocumentEngine
+
+PDFStudio.JobEngine
+
+PDFStudio.Storage
+
+PDFStudio.Security
+
+PDFStudio.Audit
+
+PDFStudio.Shared
+
+PDFStudio.SDK
+
+PDFStudio.Web
+
+PDFStudio.Windows
+
+PDFStudio.Mobile
+
+tests/
+
+PDFStudio.UnitTests
+
+PDFStudio.IntegrationTests
+
+PDFStudio.SecurityTests
+
+PDFStudio.ApiTests
+```
+
+Explain the responsibility of every project.
+
+---
+
+# 5. Public API
+
+Create versioned public APIs:
+
+```text
+/api/v1/public/*
+```
+
+Required APIs:
+
+```text
+POST   /api/v1/public/pdf/generate
+
+POST   /api/v1/public/pdf/jobs
+
+GET    /api/v1/public/pdf/jobs/{jobId}
+
+GET    /api/v1/public/pdf/{documentId}
+
+GET    /api/v1/public/pdf/{documentId}/download
+
+POST   /api/v1/public/pdf/merge
+
+POST   /api/v1/public/pdf/split
+
+POST   /api/v1/public/pdf/stamp
+
+POST   /api/v1/public/pdf/watermark
+
+GET    /api/v1/public/templates
+
+GET    /api/v1/public/templates/{templateId}
+
+POST   /api/v1/public/templates/validate
+
+GET    /api/v1/public/documents
+
+GET    /api/v1/public/documents/{documentId}
+```
+
+Design complete:
+
+- Request models
+- Response models
+- Validation
+- Error handling
+- HTTP status codes
+- Pagination
+- Correlation IDs
+- API versioning
+- Rate limiting
+- Authentication
+- Authorization
+
+---
+
+# 6. Private API
+
+Create:
+
+```text
+/api/v1/private/*
+```
+
+Private APIs are intended for:
+
+- PDFStudio Web
+- PDFStudio Windows
+- Internal microservices
+- CompanyStudio
+- Internal management applications
+
+Include:
+
+```text
+Template administration
+Document administration
+Storage administration
+Job administration
+Tenant administration
+User administration
+Audit administration
+System administration
+API administration
+```
+
+Private APIs must NOT be directly exposed to the public Internet.
+
+---
+
+# 7. Authentication and Security
+
+Public API must support:
+
+- API Key
+- OAuth/OIDC
+- JWT
+- Scopes
+- Rate limiting
+- Tenant isolation
+- IP restrictions where appropriate
+
+Example scopes:
+
+```text
+pdf:generate
+pdf:read
+pdf:merge
+pdf:split
+template:read
+template:write
+document:read
+document:download
+```
+
+Private API:
+
+- Service-to-service JWT
+- Issuer validation
+- Audience validation
+- Scope validation
+- Service identity
+- Optional mTLS architecture
+
+Never store raw API secrets.
+
+Store a secure hash and only display the secret during creation.
+
+Implement:
+
+```text
+ApiClients
+ApiKeys
+ApiScopes
+ApiUsage
+ApiRateLimits
+```
+
+---
+
+# 8. Multi-Tenant Architecture
+
+PDFStudio must support multiple organizations.
+
+Main hierarchy:
+
+```text
+Organization
+    |
+    +-- Users
+    +-- Roles
+    +-- API Clients
+    +-- API Keys
+    +-- Templates
+    +-- Documents
+    +-- Jobs
+    +-- Storage
+    +-- Audit Logs
+```
+
+Major business tables must contain:
+
+```text
+OrganizationId
+```
+
+Ensure that one organization can never access another organization's:
+
+- Templates
+- Documents
+- Files
+- API keys
+- Jobs
+- Audit records
+
+---
+
+# 9. Template Management
+
+Build a complete Template Engine.
+
+Features:
+
+- Template creation
+- Template editing
+- Template versioning
+- Template publishing
+- Template validation
+- Template preview
+- Template cloning
+- Template activation/deactivation
+- Template permissions
+
+Support variables such as:
+
+```text
+{{company.name}}
+
+{{customer.name}}
+
+{{invoice.number}}
+
+{{invoice.total}}
+```
+
+Support:
+
+```text
+Conditional sections
+Loops
+Tables
+Images
+Headers
+Footers
+Page numbers
+Watermarks
+Fonts
+Localization
+Date formatting
+Number formatting
+```
+
+Example:
+
+```html
+<h1>{{company.name}}</h1>
+
+<p>Invoice: {{invoice.number}}</p>
+
+<p>Customer: {{customer.name}}</p>
+
+{{#items}}
+<table>
+    <tr>
+        <td>{{description}}</td>
+        <td>{{quantity}}</td>
+        <td>{{price}}</td>
+    </tr>
+</table>
+{{/items}}
+```
+
+Define a safe template/data model.
+
+Prevent template injection and unsafe content execution.
+
+---
+
+# 10. PDF Features
+
+Implement architecture for:
+
+### Generation
+
+- HTML/template to PDF
+- JSON data binding
+- Text
+- Images
+- Tables
+- Headers
+- Footers
+- Page numbers
+
+### Manipulation
+
+- Merge
+- Split
+- Rotate
+- Reorder pages
+- Extract pages
+- Stamp
+- Watermark
+- Metadata
+
+### Security
+
+- Password protection
+- Encryption
+- Permission restrictions
+
+### Advanced architecture
+
+Prepare extension points for:
+
+- Digital signatures
+- PDF/A
+- PDF forms
+- OCR
+- Document comparison
+
+---
+
+# 11. Synchronous PDF Generation
+
+Support:
+
+```http
+POST /api/v1/public/pdf/generate
+```
+
+Example request:
+
+```json
+{
+  "templateId": "invoice-standard",
+  "data": {
+    "invoiceNo": "INV-10001",
+    "customerName": "ABC Technologies",
+    "amount": 12500
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "documentId": "DOC-100001",
+  "status": "completed"
+}
+```
+
+---
+
+# 12. Asynchronous PDF Generation
+
+Support large PDF jobs.
+
+```http
+POST /api/v1/public/pdf/jobs
+```
+
+Response:
+
+```json
+{
+  "jobId": "JOB-10001",
+  "status": "queued"
+}
+```
+
+Then:
+
+```http
+GET /api/v1/public/pdf/jobs/JOB-10001
+```
+
+Statuses:
+
+```text
+Queued
+Processing
+Completed
+Failed
+Cancelled
+Expired
+```
+
+Use a .NET Worker/background processing architecture.
+
+Design retry handling and idempotency.
+
+---
+
+# 13. Webhooks
+
+Support:
+
+```text
+pdf.created
+pdf.generated
+pdf.failed
+pdf.deleted
+pdf.expired
+job.completed
+job.failed
+```
+
+Example:
+
+```json
+{
+  "event": "pdf.generated",
+  "documentId": "DOC-100001",
+  "status": "completed",
+  "timestamp": "2026-10-08T14:30:00Z"
+}
+```
+
+Implement secure webhook delivery and retry strategy.
+
+---
+
+# 14. Database
+
+Design complete SQL Server and PostgreSQL schemas.
+
+Include:
+
+```text
+Organizations
+
+Users
+Roles
+Permissions
+UserRoles
+RolePermissions
+
+ApiClients
+ApiKeys
+ApiScopes
+ApiUsage
+ApiRateLimits
+
+PdfTemplates
+PdfTemplateVersions
+PdfTemplateFields
+
+Documents
+DocumentVersions
+DocumentMetadata
+
+PdfJobs
+PdfJobItems
+
+StorageObjects
+
+Webhooks
+WebhookEvents
+
+AuditLogs
+SecurityLogs
+
+SystemSettings
+```
+
+Provide:
+
+1. SQL Server CREATE TABLE scripts
+2. PostgreSQL CREATE TABLE scripts
+3. Indexes
+4. Foreign keys
+5. Unique constraints
+6. Seed data
+7. Sample organizations
+8. Sample users
+9. Sample templates
+10. Sample API clients
+
+Use appropriate database-specific types.
+
+---
+
+# 15. ADO.NET
+
+Use ADO.NET for database access.
+
+Create:
+
+```text
+IDbConnectionFactory
+IDbCommandFactory
+ITransactionManager
+```
+
+Implement separate providers where necessary for:
+
+```text
+SQL Server
+PostgreSQL
+```
+
+Do not mix SQL statements throughout business code.
+
+Use repositories/data-access services.
+
+Support:
+
+- Transactions
+- Parameters
+- CancellationToken
+- Connection pooling
+- Async database operations
+
+---
+
+# 16. Angular Web Application
+
+Create a professional enterprise UI.
+
+Main navigation:
+
+```text
+Dashboard
+
+PDF Generator
+
+Templates
+    Templates
+    Template Designer
+    Template Versions
+
+Documents
+    All Documents
+    Recent
+    Favorites
+    Archived
+
+Jobs
+    Active Jobs
+    Completed
+    Failed
+
+API Management
+    Applications
+    API Keys
+    API Usage
+    Rate Limits
+    Webhooks
+
+Administration
+    Organizations
+    Users
+    Roles
+    Permissions
+    Storage
+    Audit Logs
+    Security Logs
+    System Settings
+```
+
+Create reusable components.
+
+Use responsive design.
+
+---
+
+# 17. Windows Application
+
+Build:
+
+```text
+PDFStudio.Windows
+```
+
+Use MVVM.
+
+Screens:
+
+```text
+Login
+
+Dashboard
+
+PDF Generator
+
+Template Manager
+
+Document Manager
+
+PDF Viewer
+
+Batch PDF Processing
+
+Job Monitor
+
+Printer Manager
+
+API Configuration
+
+Offline Processing
+
+Settings
+```
+
+The Windows application should be able to configure:
+
+```text
+API URL
+Tenant
+API Key
+Authentication
+Local storage
+Default printer
+PDF output folder
+Offline processing
+```
+
+---
+
+# 18. Mobile Application
+
+Build:
+
+```text
+PDFStudio.Mobile
+```
+
+using .NET MAUI.
+
+Screens:
+
+```text
+Login
+Dashboard
+Generate PDF
+Templates
+Documents
+PDF Preview
+Download
+Share
+Settings
+```
+
+Support:
+
+- Android
+- iOS
+- Secure token storage
+- API authentication
+- PDF preview
+- Share PDF
+- Download PDF
+- Upload document
+- Job status
+
+Keep mobile UI optimized for small screens.
+
+---
+
+# 19. PDF Document Lifecycle
+
+Design this lifecycle:
+
+```text
+Template
+   ↓
+Template Version
+   ↓
+Generation Request
+   ↓
+Validation
+   ↓
+PDF Job
+   ↓
+PDF Engine
+   ↓
+PDF Generated
+   ↓
+Document
+   ↓
+Document Version
+   ↓
+Storage
+   ↓
+Download / Share / Archive
+```
+
+---
+
+# 20. Storage
+
+Create an abstraction:
+
+```csharp
+public interface IStorageProvider
+{
+    Task<string> SaveAsync(...);
+    Task<Stream> GetAsync(...);
+    Task DeleteAsync(...);
+    Task<bool> ExistsAsync(...);
+}
+```
+
+Support architecture for:
+
+```text
+Local File System
+Object Storage
+Azure Blob
+S3-compatible storage
+```
+
+Do not couple business logic to physical storage.
+
+---
+
+# 21. Logging and Audit
+
+Create enterprise logging without forcing a third-party logging framework.
+
+Support:
+
+```text
+Application Logs
+Error Logs
+Audit Logs
+Security Logs
+Performance Logs
+Infrastructure Logs
+API Logs
+```
+
+Audit events:
+
+```text
+LOGIN
+LOGOUT
+PDF_GENERATED
+PDF_DOWNLOADED
+PDF_DELETED
+TEMPLATE_CREATED
+TEMPLATE_UPDATED
+TEMPLATE_PUBLISHED
+API_KEY_CREATED
+API_KEY_REVOKED
+USER_CREATED
+PERMISSION_CHANGED
+```
+
+---
+
+# 22. Error Handling
+
+Create a consistent API response:
+
+```json
+{
+  "success": false,
+  "code": "PDF_GENERATION_FAILED",
+  "message": "Unable to generate PDF.",
+  "correlationId": "CORR-12345",
+  "errors": []
+}
+```
+
+Do not expose internal exception details to public clients.
+
+---
+
+# 23. API Documentation
+
+Generate OpenAPI documentation.
+
+Provide a developer portal concept containing:
+
+```text
+Authentication
+API Keys
+API Reference
+Examples
+SDK
+Rate Limits
+Webhooks
+Errors
+Versioning
+Sandbox
+```
+
+Provide examples for:
+
+- C#
+- JavaScript/TypeScript
+- Angular
+- curl
+
+---
+
+# 24. SDK
+
+Create a .NET SDK:
+
+```text
+PDFStudio.SDK
+```
+
+Example:
+
+```csharp
+var result = await pdfClient.GenerateAsync(
+    new PdfGenerateRequest
+    {
+        TemplateId = "invoice-standard",
+        Data = invoice
+    });
+```
+
+Create architecture for future:
+
+```text
+PDFStudio JavaScript SDK
+PDFStudio TypeScript SDK
+PDFStudio Python SDK
+```
+
+---
+
+# 25. Licensing
+
+Prepare the product for commercial licensing.
+
+Support:
+
+```text
+Trial
+Community
+Professional
+Enterprise
+```
+
+Possible limits:
+
+```text
+PDF generation count
+API calls
+Storage
+Users
+Organizations
+Templates
+Concurrent jobs
+```
+
+Implement licensing as an independent module so it can be changed later.
+
+---
+
+# 26. Security Requirements
+
+Follow secure enterprise practices.
+
+Include:
+
+- HTTPS
+- JWT validation
+- OIDC
+- API key hashing
+- Secret protection
+- Password hashing
+- RBAC
+- Tenant isolation
+- Rate limiting
+- Input validation
+- File validation
+- File size limits
+- Malware scanning extension point
+- SSRF protection
+- Path traversal protection
+- Template injection protection
+- Secure headers
+- CORS
+- CSRF protection where applicable
+- Audit logging
+- Security logging
+- Secret rotation
+- Token expiration
+- Refresh token strategy
+- Account lockout
+- Brute-force protection
+
+Never trust user-supplied file names or paths.
+
+---
+
+# 27. Performance
+
+Design for:
+
+```text
+Small PDFs:
+Immediate generation
+
+Large PDFs:
+Background jobs
+
+Bulk PDFs:
+Batch processing
+
+High volume:
+Queue-based processing
+```
+
+Prepare architecture for horizontal scaling:
+
+```text
+API Server 1
+API Server 2
+API Server 3
+
+PDF Worker 1
+PDF Worker 2
+PDF Worker 3
+```
+
+---
+
+# 28. Docker
+
+Create Dockerfiles for:
+
+```text
+Public API
+Private API
+API Gateway
+PDF Worker
+Web Application
+```
+
+Create:
+
+```text
+docker-compose.yml
+```
+
+for local development containing:
+
+```text
+PDFStudio API
+PDFStudio Worker
+SQL Server
+PostgreSQL
+Storage
+```
+
+---
+
+# 29. CI/CD
+
+Create CI/CD architecture.
+
+Pipeline:
+
+```text
+Git Push
+   ↓
+Build
+   ↓
+Unit Tests
+   ↓
+Integration Tests
+   ↓
+Security Checks
+   ↓
+Docker Build
+   ↓
+Package
+   ↓
+Deploy
+```
+
+Prepare environments:
+
+```text
+Development
+Test
+Staging
+Production
+```
+
+---
+
+# 30. Testing
+
+Create:
+
+### Unit Tests
+
+- PDF request validation
+- Template validation
+- Authorization
+- Tenant isolation
+- Business rules
+- Storage
+- Job processing
+
+### Integration Tests
+
+- API
+- Database
+- Storage
+- Authentication
+- PDF generation
+
+### Security Tests
+
+- Unauthorized access
+- Cross-tenant access
+- Invalid API keys
+- Expired JWT
+- Missing scopes
+- Rate limits
+- Path traversal
+- Malicious templates
+
+### UI Tests
+
+- Angular
+- Windows
+- Mobile
+
+---
+
+# 31. Development Rules
+
+Follow these rules strictly:
+
+1. Do not create unnecessary microservices.
+2. Start with a modular monolith architecture that can evolve into microservices.
+3. Keep Public API and Private API logically separated.
+4. Keep PDF Engine independent.
+5. Keep Storage independent.
+6. Keep Database access independent.
+7. Use interfaces for replaceable infrastructure.
+8. Use dependency injection.
+9. Use SOLID.
+10. Use clean architecture.
+11. Use async APIs.
+12. Use CancellationToken.
+13. Avoid duplicated code.
+14. Avoid hard-coded configuration.
+15. Use environment configuration.
+16. Never commit secrets.
+17. Never expose internal exceptions.
+18. Never trust uploaded files.
+19. Never allow cross-tenant data access.
+20. Add automated tests for critical functionality.
+
+---
+
+# 32. Development Order
+
+Do NOT attempt to generate the entire project blindly in one step.
+
+Implement in this order:
+
+### Phase 1
+
+Architecture + solution structure
+
+### Phase 2
+
+Database
+
+### Phase 3
+
+Domain/Application layers
+
+### Phase 4
+
+Authentication/security
+
+### Phase 5
+
+Public API
+
+### Phase 6
+
+Private API
+
+### Phase 7
+
+PDF Engine abstraction + first implementation
+
+### Phase 8
+
+Template Engine
+
+### Phase 9
+
+Document Management
+
+### Phase 10
+
+Background Jobs
+
+### Phase 11
+
+Angular Web
+
+### Phase 12
+
+Windows WPF
+
+### Phase 13
+
+.NET MAUI Mobile
+
+### Phase 14
+
+SDK
+
+### Phase 15
+
+Docker
+
+### Phase 16
+
+Testing
+
+### Phase 17
+
+CI/CD
+
+### Phase 18
+
+Production hardening
+
+---
+
+# 33. Expected Output
+
+For every phase provide:
+
+1. Architecture
+2. Folder structure
+3. Project structure
+4. Database schema
+5. API specification
+6. Models
+7. Interfaces
+8. Implementation
+9. Configuration
+10. Security considerations
+11. Tests
+12. Example requests
+13. Example responses
+14. Deployment instructions
+
+Do not skip important implementation details.
+
+When writing code, provide complete compilable files rather than fragments whenever practical.
+
+Before generating large amounts of code, explain the architecture and wait for the next phase instruction.
+
+---
+
+# 34. First Task
+
+Start ONLY with:
+
+1. Complete PDFStudio architecture
+2. System architecture diagram
+3. Component architecture
+4. Project/solution structure
+5. Public vs Private API architecture
+6. Web/Windows/Mobile architecture
+7. Database architecture
+8. Security architecture
+9. PDF Engine architecture
+10. Template Engine architecture
+11. Deployment architecture
+12. Development phases
+13. Major risks and technical decisions
+
+Do NOT generate the full implementation yet.
+
+After presenting the architecture, provide the recommended implementation order and explain why each phase should be implemented in that order.

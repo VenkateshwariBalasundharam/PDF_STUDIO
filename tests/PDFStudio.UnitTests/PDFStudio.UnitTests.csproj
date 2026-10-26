@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PDFStudio.Domain\PDFStudio.Domain.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.Application\PDFStudio.Application.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.Infrastructure\PDFStudio.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.PdfEngine\PDFStudio.PdfEngine.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.TemplateEngine\PDFStudio.TemplateEngine.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.Storage\PDFStudio.Storage.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.DocumentEngine\PDFStudio.DocumentEngine.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.JobEngine\PDFStudio.JobEngine.csproj" />
+    <ProjectReference Include="..\..\src\PDFStudio.Licensing\PDFStudio.Licensing.csproj" />
+  </ItemGroup>
+
+</Project>

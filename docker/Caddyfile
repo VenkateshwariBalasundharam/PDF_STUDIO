@@ -1,0 +1,39 @@
+{
+    admin off
+    auto_https off
+}
+
+:80 {
+    # Public API routing
+    handle /api/v1/public/* {
+        reverse_proxy public-api:5000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Private API routing
+    handle /api/v1/private/* {
+        reverse_proxy private-api:5001 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Health check
+    handle /health {
+        respond "PDFStudio Gateway Healthy" 200
+    }
+
+    # Angular Web UI
+    handle {
+        reverse_proxy web:80
+    }
+
+    encode gzip zstd
+}
+

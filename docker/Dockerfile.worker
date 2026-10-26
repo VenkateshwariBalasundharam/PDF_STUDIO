@@ -1,0 +1,49 @@
+# Multi-stage Dockerfile for PDFStudio.Worker
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ["Directory.Build.props", "./"]
+COPY ["src/PDFStudio.Shared/PDFStudio.Shared.csproj", "src/PDFStudio.Shared/"]
+COPY ["src/PDFStudio.Domain/PDFStudio.Domain.csproj", "src/PDFStudio.Domain/"]
+COPY ["src/PDFStudio.Application/PDFStudio.Application.csproj", "src/PDFStudio.Application/"]
+COPY ["src/PDFStudio.Infrastructure/PDFStudio.Infrastructure.csproj", "src/PDFStudio.Infrastructure/"]
+COPY ["src/PDFStudio.PdfEngine/PDFStudio.PdfEngine.csproj", "src/PDFStudio.PdfEngine/"]
+COPY ["src/PDFStudio.TemplateEngine/PDFStudio.TemplateEngine.csproj", "src/PDFStudio.TemplateEngine/"]
+COPY ["src/PDFStudio.DocumentEngine/PDFStudio.DocumentEngine.csproj", "src/PDFStudio.DocumentEngine/"]
+COPY ["src/PDFStudio.JobEngine/PDFStudio.JobEngine.csproj", "src/PDFStudio.JobEngine/"]
+COPY ["src/PDFStudio.Storage/PDFStudio.Storage.csproj", "src/PDFStudio.Storage/"]
+COPY ["src/PDFStudio.Security/PDFStudio.Security.csproj", "src/PDFStudio.Security/"]
+COPY ["src/PDFStudio.Audit/PDFStudio.Audit.csproj", "src/PDFStudio.Audit/"]
+COPY ["src/PDFStudio.Worker/PDFStudio.Worker.csproj", "src/PDFStudio.Worker/"]
+
+RUN dotnet restore "src/PDFStudio.Worker/PDFStudio.Worker.csproj"
+COPY . .
+WORKDIR "/src/src/PDFStudio.Worker"
+RUN dotnet publish "PDFStudio.Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+
+# Install Chromium dependencies for PuppeteerSharp rendering
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    fonts-liberation \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/publish .
+
+ENV DOTNET_ENVIRONMENT=Production
+USER $APP_UID
+ENTRYPOINT ["dotnet", "PDFStudio.Worker.dll"]
+

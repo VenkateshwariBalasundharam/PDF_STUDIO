@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PDFStudio.ApiGateway/PDFStudio.ApiGateway.csproj" />
+    <Project Path="src/PDFStudio.Application/PDFStudio.Application.csproj" />
+    <Project Path="src/PDFStudio.Audit/PDFStudio.Audit.csproj" />
+    <Project Path="src/PDFStudio.DocumentEngine/PDFStudio.DocumentEngine.csproj" />
+    <Project Path="src/PDFStudio.Domain/PDFStudio.Domain.csproj" />
+    <Project Path="src/PDFStudio.Infrastructure/PDFStudio.Infrastructure.csproj" />
+    <Project Path="src/PDFStudio.JobEngine/PDFStudio.JobEngine.csproj" />
+    <Project Path="src/PDFStudio.Licensing/PDFStudio.Licensing.csproj" />
+    <Project Path="src/PDFStudio.Mobile/PDFStudio.Mobile.csproj" />
+    <Project Path="src/PDFStudio.PdfEngine/PDFStudio.PdfEngine.csproj" />
+    <Project Path="src/PDFStudio.PrivateApi/PDFStudio.PrivateApi.csproj" />
+    <Project Path="src/PDFStudio.PublicApi/PDFStudio.PublicApi.csproj" />
+    <Project Path="src/PDFStudio.SDK/PDFStudio.SDK.csproj" />
+    <Project Path="src/PDFStudio.Security/PDFStudio.Security.csproj" />
+    <Project Path="src/PDFStudio.Shared/PDFStudio.Shared.csproj" />
+    <Project Path="src/PDFStudio.Storage/PDFStudio.Storage.csproj" />
+    <Project Path="src/PDFStudio.TemplateEngine/PDFStudio.TemplateEngine.csproj" />
+    <Project Path="src/PDFStudio.Windows/PDFStudio.Windows.csproj" />
+    <Project Path="src/PDFStudio.Worker/PDFStudio.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PDFStudio.ApiTests/PDFStudio.ApiTests.csproj" />
+    <Project Path="tests/PDFStudio.IntegrationTests/PDFStudio.IntegrationTests.csproj" />
+    <Project Path="tests/PDFStudio.SecurityTests/PDFStudio.SecurityTests.csproj" />
+    <Project Path="tests/PDFStudio.UnitTests/PDFStudio.UnitTests.csproj" />
+  </Folder>
+</Solution>

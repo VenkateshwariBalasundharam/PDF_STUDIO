@@ -1,0 +1,34 @@
+# Multi-stage Dockerfile for PDFStudio.PrivateApi
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ["Directory.Build.props", "./"]
+COPY ["src/PDFStudio.Shared/PDFStudio.Shared.csproj", "src/PDFStudio.Shared/"]
+COPY ["src/PDFStudio.Domain/PDFStudio.Domain.csproj", "src/PDFStudio.Domain/"]
+COPY ["src/PDFStudio.Application/PDFStudio.Application.csproj", "src/PDFStudio.Application/"]
+COPY ["src/PDFStudio.Infrastructure/PDFStudio.Infrastructure.csproj", "src/PDFStudio.Infrastructure/"]
+COPY ["src/PDFStudio.PdfEngine/PDFStudio.PdfEngine.csproj", "src/PDFStudio.PdfEngine/"]
+COPY ["src/PDFStudio.TemplateEngine/PDFStudio.TemplateEngine.csproj", "src/PDFStudio.TemplateEngine/"]
+COPY ["src/PDFStudio.DocumentEngine/PDFStudio.DocumentEngine.csproj", "src/PDFStudio.DocumentEngine/"]
+COPY ["src/PDFStudio.JobEngine/PDFStudio.JobEngine.csproj", "src/PDFStudio.JobEngine/"]
+COPY ["src/PDFStudio.Storage/PDFStudio.Storage.csproj", "src/PDFStudio.Storage/"]
+COPY ["src/PDFStudio.Security/PDFStudio.Security.csproj", "src/PDFStudio.Security/"]
+COPY ["src/PDFStudio.Audit/PDFStudio.Audit.csproj", "src/PDFStudio.Audit/"]
+COPY ["src/PDFStudio.PrivateApi/PDFStudio.PrivateApi.csproj", "src/PDFStudio.PrivateApi/"]
+
+RUN dotnet restore "src/PDFStudio.PrivateApi/PDFStudio.PrivateApi.csproj"
+COPY . .
+WORKDIR "/src/src/PDFStudio.PrivateApi"
+RUN dotnet publish "PDFStudio.PrivateApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:5001
+ENV ASPNETCORE_ENVIRONMENT=Production
+EXPOSE 5001
+
+USER $APP_UID
+ENTRYPOINT ["dotnet", "PDFStudio.PrivateApi.dll"]
+

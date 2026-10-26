@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-PDFStudio.Worker-4a4ec796-32c7-4aba-bf75-f8217958edaf</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PDFStudio.Application\PDFStudio.Application.csproj" />
+    <ProjectReference Include="..\PDFStudio.Infrastructure\PDFStudio.Infrastructure.csproj" />
+    <ProjectReference Include="..\PDFStudio.PdfEngine\PDFStudio.PdfEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.TemplateEngine\PDFStudio.TemplateEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.DocumentEngine\PDFStudio.DocumentEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.JobEngine\PDFStudio.JobEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.Storage\PDFStudio.Storage.csproj" />
+    <ProjectReference Include="..\PDFStudio.Audit\PDFStudio.Audit.csproj" />
+  </ItemGroup>
+</Project>

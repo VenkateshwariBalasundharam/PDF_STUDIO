@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\PDFStudio.Application\PDFStudio.Application.csproj" />
+    <ProjectReference Include="..\PDFStudio.Infrastructure\PDFStudio.Infrastructure.csproj" />
+    <ProjectReference Include="..\PDFStudio.PdfEngine\PDFStudio.PdfEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.TemplateEngine\PDFStudio.TemplateEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.DocumentEngine\PDFStudio.DocumentEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.JobEngine\PDFStudio.JobEngine.csproj" />
+    <ProjectReference Include="..\PDFStudio.Storage\PDFStudio.Storage.csproj" />
+    <ProjectReference Include="..\PDFStudio.Security\PDFStudio.Security.csproj" />
+    <ProjectReference Include="..\PDFStudio.Audit\PDFStudio.Audit.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>
